@@ -10,5 +10,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: './', // Compatible with GitHub Pages relative hosting
+  base: '/certificate-mailer/', // Explicit base for GitHub Pages
 });
