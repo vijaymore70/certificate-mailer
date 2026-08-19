@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.pnpm-store
+
+# Production build output
+dist/
+dist-ssr/
+*.local
+
+# Environment & IDE
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vscode/
+.idea/
+
+# Temporary test generated files
+sample_participants.csv
+CERT001.pdf
+CERT002.pdf
+CERT003.pdf
+generate_test_files.cjs
