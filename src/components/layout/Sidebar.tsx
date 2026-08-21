@@ -53,9 +53,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             <h1 className="font-bold text-lg text-slate-100 tracking-tight leading-none">
               CertMailer
             </h1>
-            <span className="text-[10px] text-cyan-400 font-medium tracking-wide uppercase">
-              Powered by Refresh
-            </span>
           </div>
         </div>
 
