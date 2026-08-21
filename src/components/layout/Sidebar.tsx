@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       {/* Footer info */}
       <div className="p-4 border-t border-slate-800/60 text-[11px] text-slate-500 text-center leading-relaxed">
         Certificate Mailer v1.0<br/>
-        Powered by <span className="text-cyan-500 font-medium">Refresh Technology, Buldhana.</span>
+        Powered by <a href="https://share.google/znY5oLOy6SAU1dAPP" target="_blank" rel="noopener noreferrer" className="text-cyan-500 font-medium hover:text-cyan-400 hover:underline transition-colors">Refresh Technology, Buldhana.</a>
       </div>
     </aside>
   );
