@@ -260,12 +260,36 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const importParticipantsList = async (newParticipants: Participant[]) => {
     if (!activeEventId) return;
-    await saveParticipants(newParticipants);
+
+    // Deduplicate by email
+    const existingList = await getParticipantsByEvent(activeEventId);
+    const existingMap = new Map<string, Participant>();
+    existingList.forEach(p => {
+      if (p.email) existingMap.set(p.email.toLowerCase(), p);
+    });
+
+    const mergedParticipants = newParticipants.map(newP => {
+      if (!newP.email) return newP;
+      const existing = existingMap.get(newP.email.toLowerCase());
+      if (existing) {
+        return {
+          ...newP,
+          id: existing.id,
+          status: existing.status === 'SENT' ? 'SENT' : newP.status,
+          attempts: existing.status === 'SENT' ? existing.attempts : 0,
+          lastSentAt: existing.lastSentAt,
+          lastError: existing.lastError,
+        };
+      }
+      return newP;
+    });
+
+    await saveParticipants(mergedParticipants);
     
     // Auto trigger matching which will fetch latest from DB
     await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
     
-    showToast(`Imported ${newParticipants.length} participants successfully.`, 'success');
+    showToast(`Imported ${newParticipants.length} participants (Existing records updated).`, 'success');
   };
 
   const updateParticipantItem = async (p: Participant) => {
@@ -306,12 +330,30 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addCertificates = async (newFiles: CertificateFile[]) => {
     if (!activeEventId) return;
-    await saveCertificateFiles(newFiles);
+
+    // Deduplicate by filename
+    const existingCerts = await getCertificatesByEvent(activeEventId);
+    const existingMap = new Map<string, CertificateFile>();
+    existingCerts.forEach(c => existingMap.set(c.filename, c));
+
+    const mergedFiles = newFiles.map(newC => {
+      const existing = existingMap.get(newC.filename);
+      if (existing) {
+        return {
+          ...newC,
+          id: existing.id,
+          uploadedAt: existing.uploadedAt,
+        };
+      }
+      return newC;
+    });
+
+    await saveCertificateFiles(mergedFiles);
 
     // Trigger auto-matching which will fetch latest from DB
     await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
     
-    showToast(`Uploaded ${newFiles.length} certificate PDF files.`, 'success');
+    showToast(`Uploaded ${newFiles.length} certificate PDF files (Duplicates overwritten).`, 'success');
   };
 
   const deleteCertificate = async (id: string) => {
