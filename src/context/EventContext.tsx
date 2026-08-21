@@ -261,13 +261,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const importParticipantsList = async (newParticipants: Participant[]) => {
     if (!activeEventId) return;
     await saveParticipants(newParticipants);
-    const updatedList = await getParticipantsByEvent(activeEventId);
-    setParticipants(updatedList);
-
-    // Auto trigger matching
-    if (certificates.length > 0) {
-      await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
-    }
+    
+    // Auto trigger matching which will fetch latest from DB
+    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    
     showToast(`Imported ${newParticipants.length} participants successfully.`, 'success');
   };
 
@@ -300,39 +297,38 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const clearAllParticipants = async () => {
     if (!activeEventId) return;
     await clearEventParticipants(activeEventId);
-    setParticipants([]);
+    
+    // Auto trigger matching to reset certificate statuses
+    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    
     showToast('All participants cleared for current event.', 'warning');
   };
 
   const addCertificates = async (newFiles: CertificateFile[]) => {
     if (!activeEventId) return;
     await saveCertificateFiles(newFiles);
-    const updatedCerts = await getCertificatesByEvent(activeEventId);
-    setCertificates(updatedCerts);
 
-    // Trigger auto-matching
-    if (participants.length > 0) {
-      await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
-    }
+    // Trigger auto-matching which will fetch latest from DB
+    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    
     showToast(`Uploaded ${newFiles.length} certificate PDF files.`, 'success');
   };
 
   const deleteCertificate = async (id: string) => {
+    if (!activeEventId) return;
     await deleteCertificateFile(id);
-    setCertificates((prev) => prev.filter((c) => c.id !== id));
-    if (participants.length > 0) {
-      await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
-    }
+    
+    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    
     showToast('Certificate file removed.', 'info');
   };
 
   const clearAllCertificates = async () => {
     if (!activeEventId) return;
     await clearEventCertificates(activeEventId);
-    setCertificates([]);
-    if (participants.length > 0) {
-      await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
-    }
+    
+    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    
     showToast('All certificate files cleared for current event.', 'warning');
   };
 
@@ -340,7 +336,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!activeEventId) return;
     const currentStrategy = strategy || activeEvent?.matchingStrategy || 'CERTIFICATE_ID';
     
-    const result = MatchingService.matchCertificates(participants, certificates, currentStrategy);
+    // Fetch latest from DB to avoid stale React closure state
+    const latestParticipants = await getParticipantsByEvent(activeEventId);
+    const latestCerts = await getCertificatesByEvent(activeEventId);
+    
+    const result = MatchingService.matchCertificates(latestParticipants, latestCerts, currentStrategy);
     
     await saveParticipants(result.updatedParticipants);
     await saveCertificateFiles(result.updatedCertificates);
