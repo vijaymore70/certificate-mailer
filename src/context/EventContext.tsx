@@ -155,7 +155,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           description: 'Default sample certificate distribution event',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          matchingStrategy: 'CERTIFICATE_ID',
+          matchingStrategy: 'CUSTOM_RULE',
           emailTemplate: {
             id: `TMPL_${Date.now()}`,
             eventId: `EVT_${Date.now()}`,
@@ -218,7 +218,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      matchingStrategy: 'CERTIFICATE_ID',
+      matchingStrategy: 'CUSTOM_RULE',
       emailTemplate: {
         id: `TMPL_${Date.now()}`,
         eventId: `EVT_${Date.now()}`,
@@ -287,7 +287,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await saveParticipants(mergedParticipants);
     
     // Auto trigger matching which will fetch latest from DB
-    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    await runMatching(activeEvent?.matchingStrategy || 'CUSTOM_RULE');
     
     showToast(`Imported ${newParticipants.length} participants (Existing records updated).`, 'success');
   };
@@ -323,7 +323,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await clearEventParticipants(activeEventId);
     
     // Auto trigger matching to reset certificate statuses
-    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    await runMatching(activeEvent?.matchingStrategy || 'CUSTOM_RULE');
     
     showToast('All participants cleared for current event.', 'warning');
   };
@@ -351,7 +351,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await saveCertificateFiles(mergedFiles);
 
     // Trigger auto-matching which will fetch latest from DB
-    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    await runMatching(activeEvent?.matchingStrategy || 'CUSTOM_RULE');
     
     showToast(`Uploaded ${newFiles.length} certificate PDF files (Duplicates overwritten).`, 'success');
   };
@@ -360,7 +360,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!activeEventId) return;
     await deleteCertificateFile(id);
     
-    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    await runMatching(activeEvent?.matchingStrategy || 'CUSTOM_RULE');
     
     showToast('Certificate file removed.', 'info');
   };
@@ -369,14 +369,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!activeEventId) return;
     await clearEventCertificates(activeEventId);
     
-    await runMatching(activeEvent?.matchingStrategy || 'CERTIFICATE_ID');
+    await runMatching(activeEvent?.matchingStrategy || 'CUSTOM_RULE');
     
     showToast('All certificate files cleared for current event.', 'warning');
   };
 
   const runMatching = async (strategy?: MatchingStrategy) => {
     if (!activeEventId) return;
-    const currentStrategy = strategy || activeEvent?.matchingStrategy || 'CERTIFICATE_ID';
+    const currentStrategy = strategy || activeEvent?.matchingStrategy || 'CUSTOM_RULE';
     
     // Fetch latest from DB to avoid stale React closure state
     const latestParticipants = await getParticipantsByEvent(activeEventId);

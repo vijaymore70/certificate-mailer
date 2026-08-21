@@ -37,7 +37,7 @@ export const MatchingPreviewTable: React.FC = () => {
         <div>
           <h3 className="text-sm font-semibold text-slate-100">Certificate Matching Verification</h3>
           <p className="text-xs text-slate-400">
-            Current Strategy: <span className="font-semibold text-cyan-400">{activeEvent?.matchingStrategy || 'CERTIFICATE_ID'}</span>
+            Current Strategy: <span className="font-semibold text-cyan-400">{activeEvent?.matchingStrategy === 'CUSTOM_RULE' ? 'Smart Match (ID or Name)' : activeEvent?.matchingStrategy || 'Smart Match (ID or Name)'}</span>
           </p>
         </div>
 
