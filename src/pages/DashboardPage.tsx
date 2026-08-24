@@ -137,7 +137,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
       </div>
 
       {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total */}
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
           <div className="flex items-center justify-between">
@@ -180,7 +180,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
       </div>
 
       {/* Secondary Status Breakdown */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-slate-900/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between">
           <div>
             <span className="text-[11px] text-amber-400 uppercase font-semibold">Pending</span>
