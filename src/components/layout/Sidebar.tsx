@@ -10,6 +10,7 @@ import {
   History,
   Settings,
   Award,
+  Wand2,
 } from 'lucide-react';
 
 export type TabType =
@@ -21,7 +22,8 @@ export type TabType =
   | 'template'
   | 'participants'
   | 'history'
-  | 'settings';
+  | 'settings'
+  | 'generator';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -35,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'import', label: 'Import Data', icon: FileSpreadsheet },
     { id: 'certificates', label: 'Upload Certificates', icon: FileText },
+    { id: 'generator', label: 'Certificate Generator', icon: Wand2 },
     { id: 'preview', label: 'Matching Preview', icon: Eye },
     { id: 'template', label: 'Email Template', icon: Mail },
     { id: 'participants', label: 'Participants & Send', icon: Users },

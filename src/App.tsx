@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { EventsPage } from './pages/EventsPage';
 import { ImportPage } from './pages/ImportPage';
 import { CertificatesPage } from './pages/CertificatesPage';
+import { CertificateGeneratorPage } from './pages/CertificateGeneratorPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { TemplatePage } from './pages/TemplatePage';
 import { ParticipantsPage } from './pages/ParticipantsPage';
@@ -25,6 +26,8 @@ export const AppContent: React.FC = () => {
         return <ImportPage setActiveTab={setActiveTab} />;
       case 'certificates':
         return <CertificatesPage setActiveTab={setActiveTab} />;
+      case 'generator':
+        return <CertificateGeneratorPage />;
       case 'preview':
         return <PreviewPage />;
       case 'template':
