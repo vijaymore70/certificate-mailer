@@ -11,6 +11,7 @@ export interface TextFieldConfig {
   yPercent: number; // 0 to 100
   fontSize: number;
   fontColor: string; // Hex string e.g. '#000000'
+  fontFamily?: 'helvetica' | 'times' | 'courier';
   fontStyle: 'normal' | 'bold' | 'italic';
   alignment: 'left' | 'center' | 'right';
 }
@@ -41,17 +42,39 @@ export class CertificateGeneratorService {
   }
 
   /**
-   * Helper to select standard PDF font based on style
+   * Helper to select standard PDF font based on family and style
    */
-  private static getFontName(style: 'normal' | 'bold' | 'italic'): StandardFonts {
-    switch (style) {
-      case 'bold':
-        return StandardFonts.HelveticaBold;
-      case 'italic':
-        return StandardFonts.HelveticaOblique;
-      case 'normal':
-      default:
-        return StandardFonts.Helvetica;
+  private static getFontName(
+    family: 'helvetica' | 'times' | 'courier' = 'helvetica',
+    style: 'normal' | 'bold' | 'italic' = 'normal'
+  ): StandardFonts {
+    if (family === 'times') {
+      switch (style) {
+        case 'bold':
+          return StandardFonts.TimesRomanBold;
+        case 'italic':
+          return StandardFonts.TimesRomanItalic;
+        default:
+          return StandardFonts.TimesRoman;
+      }
+    } else if (family === 'courier') {
+      switch (style) {
+        case 'bold':
+          return StandardFonts.CourierBold;
+        case 'italic':
+          return StandardFonts.CourierOblique;
+        default:
+          return StandardFonts.Courier;
+      }
+    } else {
+      switch (style) {
+        case 'bold':
+          return StandardFonts.HelveticaBold;
+        case 'italic':
+          return StandardFonts.HelveticaOblique;
+        default:
+          return StandardFonts.Helvetica;
+      }
     }
   }
 
@@ -106,7 +129,7 @@ export class CertificateGeneratorService {
 
       if (!textValue) continue;
 
-      const fontName = this.getFontName(field.fontStyle);
+      const fontName = this.getFontName(field.fontFamily || 'helvetica', field.fontStyle);
       if (!fontCache[fontName]) {
         fontCache[fontName] = await pdfDoc.embedFont(fontName);
       }
@@ -194,7 +217,6 @@ export class CertificateGeneratorService {
       }
 
       const filename = `${baseFilename}.pdf`;
-      // Create copy of ArrayBuffer for Blob & zip
       const buffer = pdfBytes.buffer.slice(pdfBytes.byteOffset, pdfBytes.byteOffset + pdfBytes.byteLength) as ArrayBuffer;
       const pdfBlob = new Blob([buffer], { type: 'application/pdf' });
 

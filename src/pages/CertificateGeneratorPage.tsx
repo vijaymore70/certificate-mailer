@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Upload,
   FileSpreadsheet,
@@ -17,6 +17,7 @@ import {
   FileUp,
   Check,
   Settings2,
+  Type,
 } from 'lucide-react';
 import { useEventContext } from '../context/EventContext';
 import { ParserService, ParseResult } from '../services/parserService';
@@ -36,6 +37,11 @@ export const CertificateGeneratorPage: React.FC = () => {
   const [templateType, setTemplateType] = useState<'image' | 'pdf'>('image');
   const [templateDataUrl, setTemplateDataUrl] = useState<string>('');
   const [templateBytes, setTemplateBytes] = useState<ArrayBuffer | null>(null);
+  const [templateDimensions, setTemplateDimensions] = useState<{ width: number; height: number }>({
+    width: 1920,
+    height: 1080,
+  });
+  const [previewCanvasWidth, setPreviewCanvasWidth] = useState<number>(768);
 
   // Data File State
   const [dataFile, setDataFile] = useState<File | null>(null);
@@ -55,8 +61,9 @@ export const CertificateGeneratorPage: React.FC = () => {
       columnKey: '',
       xPercent: 50,
       yPercent: 50,
-      fontSize: 32,
+      fontSize: 42,
       fontColor: '#1e293b',
+      fontFamily: 'times',
       fontStyle: 'bold',
       alignment: 'center',
     },
@@ -66,8 +73,9 @@ export const CertificateGeneratorPage: React.FC = () => {
       columnKey: '',
       xPercent: 50,
       yPercent: 75,
-      fontSize: 16,
+      fontSize: 18,
       fontColor: '#64748b',
+      fontFamily: 'helvetica',
       fontStyle: 'normal',
       alignment: 'center',
     },
@@ -83,8 +91,9 @@ export const CertificateGeneratorPage: React.FC = () => {
       }),
       xPercent: 50,
       yPercent: 82,
-      fontSize: 14,
+      fontSize: 16,
       fontColor: '#64748b',
+      fontFamily: 'helvetica',
       fontStyle: 'normal',
       alignment: 'center',
     },
@@ -106,6 +115,20 @@ export const CertificateGeneratorPage: React.FC = () => {
 
   const templateImageRef = useRef<HTMLImageElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  // Dynamically track preview container width for 100% WYSIWYG font scaling
+  useEffect(() => {
+    if (!previewContainerRef.current) return;
+    const updateWidth = () => {
+      if (previewContainerRef.current) {
+        setPreviewCanvasWidth(previewContainerRef.current.clientWidth || 768);
+      }
+    };
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(previewContainerRef.current);
+    return () => observer.disconnect();
+  }, [templateDataUrl]);
 
   // Handle Template File Upload
   const handleTemplateUpload = async (file: File) => {
@@ -704,6 +727,14 @@ export const CertificateGeneratorPage: React.FC = () => {
                   if (field.alignment === 'left') alignClass = 'translate-x-0';
                   if (field.alignment === 'right') alignClass = '-translate-x-full';
 
+                  const baseWidth = templateDimensions.width || 1920;
+                  const scaleRatio = previewCanvasWidth / baseWidth;
+                  const calculatedPreviewFontSize = Math.max(10, Math.round(field.fontSize * scaleRatio * 1.5));
+
+                  let fontFamilyCss = 'font-sans';
+                  if (field.fontFamily === 'times') fontFamilyCss = 'font-serif';
+                  if (field.fontFamily === 'courier') fontFamilyCss = 'font-mono';
+
                   return (
                     <div
                       key={field.id}
@@ -728,11 +759,11 @@ export const CertificateGeneratorPage: React.FC = () => {
                         <span
                           style={{
                             color: field.fontColor,
-                            fontSize: `${Math.max(12, Math.min(36, field.fontSize * 0.55))}px`,
+                            fontSize: `${calculatedPreviewFontSize}px`,
                             fontWeight: field.fontStyle === 'bold' ? 'bold' : 'normal',
                             fontStyle: field.fontStyle === 'italic' ? 'italic' : 'normal',
                           }}
-                          className="whitespace-nowrap drop-shadow-sm"
+                          className={`whitespace-nowrap drop-shadow-sm ${fontFamilyCss}`}
                         >
                           {textValue || `[${field.label}]`}
                         </span>
@@ -881,6 +912,19 @@ export const CertificateGeneratorPage: React.FC = () => {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 block mb-1">Font Family:</label>
+                    <select
+                      value={selectedFieldConfig.fontFamily || 'helvetica'}
+                      onChange={(e) => updateSelectedField('fontFamily', e.target.value as any)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-cyan-500 focus:outline-none"
+                    >
+                      <option value="times">Times New Roman (Classic Serif)</option>
+                      <option value="helvetica">Helvetica (Modern Clean)</option>
+                      <option value="courier">Courier (Monospace Code)</option>
+                    </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
