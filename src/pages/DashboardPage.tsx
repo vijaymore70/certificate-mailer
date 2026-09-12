@@ -13,6 +13,7 @@ import {
   Mail,
   Award,
   RotateCcw,
+  Wand2,
 } from 'lucide-react';
 import { TabType } from '../components/layout/Sidebar';
 import { SendingEngine, SendingProgress } from '../services/sendingEngine';
@@ -108,10 +109,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
               </button>
             ) : (
               <button
-                onClick={() => setActiveTab('import')}
+                onClick={() => setActiveTab('generator')}
                 className="px-6 py-3 rounded-2xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 font-semibold text-sm flex items-center gap-2 transition-colors"
               >
-                <FileSpreadsheet className="h-4 w-4 text-cyan-400" /> Import Participants
+                <Wand2 className="h-4 w-4 text-cyan-400" /> Certificate Generator
               </button>
             )}
           </div>
