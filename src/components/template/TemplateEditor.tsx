@@ -88,18 +88,22 @@ export const TemplateEditor: React.FC = () => {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  // Sample data for live preview
-  const sampleParticipant = participants[0] || {
-    name: 'Rahul Patil',
-    email: 'rahul.patil@example.com',
-    certificateId: 'CERT001',
-    registrationId: 'REG-1001',
-  };
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string>('');
+
+  // Selected or sample participant for live preview
+  const sampleParticipant =
+    participants.find((p) => p.id === selectedParticipantId) ||
+    participants[0] || {
+      name: 'Rahul Patil',
+      email: 'rahul.patil@example.com',
+      certificateId: 'CERT001',
+      registrationId: 'REG-1001',
+    };
 
   const sampleDataMap: Record<string, string> = {
     name: sampleParticipant.name,
     email: sampleParticipant.email,
-    certificate_id: sampleParticipant.certificateId,
+    certificate_id: sampleParticipant.certificateId || 'CERT001',
     registration_id: sampleParticipant.registrationId || 'REG-1001',
     event_name: activeEvent?.name || 'Annual Seminar 2026',
   };
@@ -235,9 +239,23 @@ export const TemplateEditor: React.FC = () => {
               <Mail className="h-4 w-4 text-cyan-400" />
               Live Email Preview
             </h4>
-            <span className="text-[11px] text-slate-500">
-              Sample Participant: <strong className="text-slate-300">{sampleParticipant.name}</strong>
-            </span>
+            {participants.length > 0 ? (
+              <select
+                value={selectedParticipantId || sampleParticipant.id}
+                onChange={(e) => setSelectedParticipantId(e.target.value)}
+                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+              >
+                {participants.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    Preview for: {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-[11px] text-slate-500">
+                Sample Participant: <strong className="text-slate-300">{sampleParticipant.name}</strong>
+              </span>
+            )}
           </div>
 
           <div className="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-5 overflow-y-auto space-y-4">
@@ -245,7 +263,7 @@ export const TemplateEditor: React.FC = () => {
               <p><strong className="text-slate-300">From:</strong> {fromName || 'Refresh Technology'}</p>
               <p><strong className="text-slate-300">To:</strong> {sampleParticipant.email}</p>
               <p><strong className="text-slate-300">Subject:</strong> {renderInterpolatedText(subject)}</p>
-              <p className="text-cyan-400"><strong className="text-slate-300">Attachment:</strong> {sampleParticipant.matchedCertificateFilename || `${sampleParticipant.certificateId}.pdf`}</p>
+              <p className="text-cyan-400"><strong className="text-slate-300">Attachment:</strong> {sampleParticipant.matchedCertificateFilename || `${sampleParticipant.name.replace(/\s+/g, '_')}.pdf`}</p>
             </div>
 
             {/* Rendered Email Body Preview */}
