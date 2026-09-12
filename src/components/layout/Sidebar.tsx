@@ -36,7 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'import', label: 'Import Data', icon: FileSpreadsheet },
-    { id: 'certificates', label: 'Upload Certificates', icon: FileText },
     { id: 'generator', label: 'Certificate Generator', icon: Wand2 },
     { id: 'preview', label: 'Matching Preview', icon: Eye },
     { id: 'template', label: 'Email Template', icon: Mail },

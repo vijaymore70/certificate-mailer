@@ -66,10 +66,10 @@ export const ImportPage: React.FC<ImportPageProps> = ({ setActiveTab }) => {
               Currently Imported Participant List ({participants.length})
             </h3>
             <button
-              onClick={() => setActiveTab('certificates')}
+              onClick={() => setActiveTab('generator')}
               className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-xl transition-colors"
             >
-              Proceed to Upload Certificates &rarr;
+              Proceed to Certificate Generator &rarr;
             </button>
           </div>
 
