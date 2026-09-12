@@ -727,9 +727,8 @@ export const CertificateGeneratorPage: React.FC = () => {
                   if (field.alignment === 'left') alignClass = 'translate-x-0';
                   if (field.alignment === 'right') alignClass = '-translate-x-full';
 
-                  const baseWidth = templateDimensions.width || 1920;
-                  const scaleRatio = previewCanvasWidth / baseWidth;
-                  const calculatedPreviewFontSize = Math.max(10, Math.round(field.fontSize * scaleRatio * 1.5));
+                  const screenScale = previewCanvasWidth / 1000;
+                  const calculatedPreviewFontSize = Math.max(10, Math.round((field.fontSize || 32) * screenScale));
 
                   let fontFamilyCss = 'font-sans';
                   if (field.fontFamily === 'times') fontFamilyCss = 'font-serif';
@@ -887,7 +886,7 @@ export const CertificateGeneratorPage: React.FC = () => {
                       <input
                         type="number"
                         min="8"
-                        max="120"
+                        max="250"
                         value={selectedFieldConfig.fontSize}
                         onChange={(e) =>
                           updateSelectedField('fontSize', parseInt(e.target.value) || 24)

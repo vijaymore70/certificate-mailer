@@ -119,6 +119,9 @@ export class CertificateGeneratorService {
       });
     }
 
+    // Resolution scale normalization factor based on standard 1000pt baseline
+    const resolutionScale = width / 1000;
+
     // Embed fonts cache
     const fontCache: Record<string, any> = {};
 
@@ -134,8 +137,12 @@ export class CertificateGeneratorService {
         fontCache[fontName] = await pdfDoc.embedFont(fontName);
       }
       const font = fontCache[fontName];
-      const fontSize = field.fontSize || 24;
-      const textWidth = font.widthOfTextAtSize(textValue, fontSize);
+      
+      // Calculate normalized font size relative to template resolution
+      const baseFontSize = field.fontSize || 32;
+      const effectiveFontSize = Math.max(12, Math.round(baseFontSize * resolutionScale));
+
+      const textWidth = font.widthOfTextAtSize(textValue, effectiveFontSize);
       const color = this.hexToRgb(field.fontColor || '#000000');
 
       // PDF coordinates have (0,0) at bottom-left corner
@@ -150,12 +157,12 @@ export class CertificateGeneratorService {
       }
 
       // Vertical alignment compensation so text draws nicely on baseline
-      y = y - fontSize / 3;
+      y = y - effectiveFontSize / 3;
 
       page.drawText(textValue, {
         x,
         y,
-        size: fontSize,
+        size: effectiveFontSize,
         font,
         color,
       });
