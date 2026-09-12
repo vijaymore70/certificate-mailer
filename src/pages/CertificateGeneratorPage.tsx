@@ -26,6 +26,7 @@ import {
   GeneratedCertificate,
 } from '../services/certificateGeneratorService';
 import { CertificateFile } from '../types/certificate';
+import { downloadExcelTemplate, downloadCsvTemplate } from '../utils/exportCsv';
 
 export const CertificateGeneratorPage: React.FC = () => {
   const { activeEvent, addCertificates, importParticipantsList } = useEventContext();
@@ -460,6 +461,27 @@ export const CertificateGeneratorPage: React.FC = () => {
               )}
             </div>
 
+            {/* Sample Template Download Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+              <span className="text-xs text-slate-400 font-medium">Sample Format:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadExcelTemplate()}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium border border-emerald-500/20 transition-all"
+                >
+                  <Download className="h-3.5 w-3.5" /> Sample Excel (.xlsx)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadCsvTemplate()}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition-all"
+                >
+                  <Download className="h-3.5 w-3.5" /> CSV (.csv)
+                </button>
+              </div>
+            </div>
+
             {!dataFile ? (
               <label className="border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all bg-slate-950/40 hover:bg-slate-950/80 group text-center">
                 <FileSpreadsheet className="h-10 w-10 text-slate-500 group-hover:text-emerald-400 transition-colors mb-3" />
@@ -501,7 +523,7 @@ export const CertificateGeneratorPage: React.FC = () => {
 
                 {/* Column Selector */}
                 {parsedData && (
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                     <div>
                       <label className="text-slate-400 block mb-1">Name Column:</label>
                       <select
@@ -514,6 +536,21 @@ export const CertificateGeneratorPage: React.FC = () => {
                         }}
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 focus:border-cyan-500 focus:outline-none"
                       >
+                        {parsedData.headers.map((h) => (
+                          <option key={h} value={h}>
+                            {h}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-400 block mb-1">Email Column (for Mailer):</label>
+                      <select
+                        value={emailColumn}
+                        onChange={(e) => setEmailColumn(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 focus:border-cyan-500 focus:outline-none"
+                      >
+                        <option value="">(None)</option>
                         {parsedData.headers.map((h) => (
                           <option key={h} value={h}>
                             {h}
