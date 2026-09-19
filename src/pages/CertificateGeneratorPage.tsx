@@ -230,6 +230,9 @@ export const CertificateGeneratorPage: React.FC = () => {
       setErrorMsg('');
       setImportStatus('');
 
+      // Yield 50ms so React updates the DOM with the 0% progress bar before batch processing
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       const result = await CertificateGeneratorService.batchGenerate(
         templateBytes,
         templateType,

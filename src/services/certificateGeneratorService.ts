@@ -106,7 +106,8 @@ export class CertificateGeneratorService {
     templateType: 'image' | 'pdf',
     mimeType: string,
     fieldConfigs: TextFieldConfig[],
-    rowData: Record<string, any>
+    rowData: Record<string, any>,
+    fontBytesMap?: Map<string, ArrayBuffer>
   ): Promise<Uint8Array> {
     let pdfDoc: PDFDocument;
     let page: any;
@@ -161,7 +162,8 @@ export class CertificateGeneratorService {
       if (!fontCache[cacheKey]) {
         if (fontConfig.ttfUrl) {
           try {
-            const fontBytes = await this.fetchFontBytes(fontConfig.ttfUrl);
+            const fontBytes =
+              fontBytesMap?.get(fontConfig.id) || (await this.fetchFontBytes(fontConfig.ttfUrl));
             fontCache[cacheKey] = await pdfDoc.embedFont(fontBytes);
           } catch (err) {
             console.warn(`Fallback to standard PDF font for ${fontConfig.id}`, err);
@@ -238,9 +240,24 @@ export class CertificateGeneratorService {
     const certificates: GeneratedCertificate[] = [];
     const usedFilenames = new Map<string, number>();
 
+    // Initial progress report & yield 50ms so React mounts and renders the progress bar
     if (onProgress) {
       onProgress(0, rawRows.length);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    // Pre-fetch all needed TTF fonts in parallel before rendering loop
+    const fontBytesMap = new Map<string, ArrayBuffer>();
+    for (const field of fieldConfigs) {
+      const fontConfig = getFontById(field.fontFamily || 'great_vibes');
+      if (fontConfig.ttfUrl && !fontBytesMap.has(fontConfig.id)) {
+        try {
+          const bytes = await this.fetchFontBytes(fontConfig.ttfUrl);
+          fontBytesMap.set(fontConfig.id, bytes);
+        } catch (err) {
+          console.warn(`Could not pre-fetch font ${fontConfig.id}`, err);
+        }
+      }
     }
 
     for (let i = 0; i < rawRows.length; i++) {
@@ -254,7 +271,8 @@ export class CertificateGeneratorService {
         templateType,
         mimeType,
         fieldConfigs,
-        row
+        row,
+        fontBytesMap
       );
 
       let baseFilename = this.sanitizeFilename(participantName);
@@ -283,8 +301,8 @@ export class CertificateGeneratorService {
 
       if (onProgress) {
         onProgress(i + 1, rawRows.length);
-        // Yield macro-task to let UI repaint real-time percentage
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        // Yield 20ms macro-task to give browser time for UI repaint & keep page 100% responsive
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
     }
 
