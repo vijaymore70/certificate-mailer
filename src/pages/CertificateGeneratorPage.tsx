@@ -68,36 +68,6 @@ export const CertificateGeneratorPage: React.FC = () => {
       fontStyle: 'normal',
       alignment: 'center',
     },
-    {
-      id: 'certId',
-      label: 'Certificate ID',
-      columnKey: '',
-      xPercent: 50,
-      yPercent: 75,
-      fontSize: 18,
-      fontColor: '#64748b',
-      fontFamily: 'helvetica',
-      fontStyle: 'normal',
-      alignment: 'center',
-    },
-    {
-      id: 'date',
-      label: 'Date / Custom Text',
-      columnKey: '',
-      isCustomText: true,
-      customValue: new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-      xPercent: 50,
-      yPercent: 82,
-      fontSize: 16,
-      fontColor: '#64748b',
-      fontFamily: 'helvetica',
-      fontStyle: 'normal',
-      alignment: 'center',
-    },
   ]);
   const [selectedFieldId, setSelectedFieldId] = useState<string>('name');
 
@@ -1036,7 +1006,7 @@ export const CertificateGeneratorPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {fieldConfigs.length > 1 && (
+                  {fieldConfigs.length > 0 && (
                     <div className="pt-2 border-t border-slate-800">
                       <button
                         onClick={() => removeField(selectedFieldConfig.id)}
