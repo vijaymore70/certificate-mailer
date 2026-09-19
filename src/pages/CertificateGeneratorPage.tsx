@@ -342,70 +342,17 @@ export const CertificateGeneratorPage: React.FC = () => {
 
   const selectedFieldConfig = fieldConfigs.find((f) => f.id === selectedFieldId);
 
+  const progressPercentage =
+    generationProgress.total > 0
+      ? Math.round((generationProgress.current / generationProgress.total) * 100)
+      : 0;
+
   return (
     <div className="space-y-6 pb-12">
-      {/* Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <Wand2 className="h-6 w-6" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
-                Certificate Generator
-              </h1>
-            </div>
-            <p className="text-slate-400 text-sm max-w-2xl leading-relaxed">
-              Upload your certificate template design (Image/PDF) and an Excel list of names. Position text fields visually, preview in real time, and batch-generate individual PDF certificates.
-            </p>
-          </div>
-
-          {parsedData && templateFile && (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleBatchGenerate}
-                disabled={isGenerating}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-900/30 transition-all disabled:opacity-50"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Generating... ({generationProgress.current}/{generationProgress.total})</span>
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="h-5 w-5" />
-                    <span>Generate Certificates ({parsedData.rawRows.length})</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Error / Success Notifications */}
-      {errorMsg && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-3 text-sm">
-          <AlertCircle className="h-5 w-5 shrink-0" />
-          <span>{errorMsg}</span>
-        </div>
-      )}
-
-      {importStatus && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-3 text-sm">
-          <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <span>{importStatus}</span>
-        </div>
-      )}
-
-      {/* Step 1: Upload Files Grid */}
+      {/* Step 1: Upload Files Grid (at top) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Template Upload Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -466,7 +413,7 @@ export const CertificateGeneratorPage: React.FC = () => {
         </div>
 
         {/* Excel Data Upload Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -611,6 +558,81 @@ export const CertificateGeneratorPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Header Banner (moved down below upload grid) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <Wand2 className="h-6 w-6" />
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+                Certificate Generator
+              </h1>
+            </div>
+            <p className="text-slate-400 text-sm max-w-2xl leading-relaxed">
+              Upload your certificate template design (Image/PDF) and an Excel list of names. Position text fields visually, preview in real time, and batch-generate individual PDF certificates.
+            </p>
+          </div>
+
+          {parsedData && templateFile && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBatchGenerate}
+                disabled={isGenerating}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-900/30 transition-all disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Generating... {progressPercentage}% ({generationProgress.current}/{generationProgress.total})</span>
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="h-5 w-5" />
+                    <span>Generate Certificates ({parsedData.rawRows.length})</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Generation Progress Bar Card */}
+      {isGenerating && (
+        <div className="bg-slate-900 border border-cyan-500/40 rounded-2xl p-6 shadow-2xl space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-100 text-base">Generating Certificates...</h3>
+                <p className="text-xs text-slate-400">
+                  Processing record {generationProgress.current} of {generationProgress.total}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                {progressPercentage}%
+              </span>
+            </div>
+          </div>
+
+          {/* Progress Bar Track */}
+          <div className="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-800">
+            <div
+              className="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 h-full rounded-full transition-all duration-300 shadow-md shadow-cyan-500/50"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Generated Results Action Banner */}
       {generatedResults && (
