@@ -226,6 +226,7 @@ export const CertificateGeneratorPage: React.FC = () => {
 
     try {
       setIsGenerating(true);
+      setGenerationProgress({ current: 0, total: parsedData.rawRows.length });
       setErrorMsg('');
       setImportStatus('');
 

@@ -238,6 +238,11 @@ export class CertificateGeneratorService {
     const certificates: GeneratedCertificate[] = [];
     const usedFilenames = new Map<string, number>();
 
+    if (onProgress) {
+      onProgress(0, rawRows.length);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
     for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
       const participantName = String(row[nameColumn] || `Participant_${i + 1}`).trim();
@@ -278,6 +283,8 @@ export class CertificateGeneratorService {
 
       if (onProgress) {
         onProgress(i + 1, rawRows.length);
+        // Yield macro-task to let UI repaint real-time percentage
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
 
