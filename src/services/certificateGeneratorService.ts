@@ -1,5 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import JSZip from 'jszip';
+import { getFontById, CertificateFont } from '../utils/certificateFonts';
 
 export interface TextFieldConfig {
   id: string;
@@ -11,7 +13,7 @@ export interface TextFieldConfig {
   yPercent: number; // 0 to 100
   fontSize: number;
   fontColor: string; // Hex string e.g. '#000000'
-  fontFamily?: 'helvetica' | 'times' | 'courier';
+  fontFamily?: string; // Font ID from CERTIFICATE_FONTS
   fontStyle: 'normal' | 'bold' | 'italic';
   alignment: 'left' | 'center' | 'right';
 }
@@ -26,6 +28,24 @@ export interface GeneratedCertificate {
 }
 
 export class CertificateGeneratorService {
+  private static fontBytesCache: Map<string, ArrayBuffer> = new Map();
+
+  /**
+   * Helper to fetch and cache TTF font files
+   */
+  private static async fetchFontBytes(url: string): Promise<ArrayBuffer> {
+    if (this.fontBytesCache.has(url)) {
+      return this.fontBytesCache.get(url)!;
+    }
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch font from ${url}`);
+    }
+    const buffer = await response.arrayBuffer();
+    this.fontBytesCache.set(url, buffer);
+    return buffer;
+  }
+
   /**
    * Helper to convert HEX color to pdf-lib RGB color
    */
@@ -42,13 +62,13 @@ export class CertificateGeneratorService {
   }
 
   /**
-   * Helper to select standard PDF font based on family and style
+   * Helper to select standard fallback PDF font
    */
   private static getFontName(
-    family: 'helvetica' | 'times' | 'courier' = 'helvetica',
+    category: 'script' | 'serif' | 'sans' | 'mono' = 'sans',
     style: 'normal' | 'bold' | 'italic' = 'normal'
   ): StandardFonts {
-    if (family === 'times') {
+    if (category === 'serif' || category === 'script') {
       switch (style) {
         case 'bold':
           return StandardFonts.TimesRomanBold;
@@ -57,7 +77,7 @@ export class CertificateGeneratorService {
         default:
           return StandardFonts.TimesRoman;
       }
-    } else if (family === 'courier') {
+    } else if (category === 'mono') {
       switch (style) {
         case 'bold':
           return StandardFonts.CourierBold;
@@ -119,6 +139,9 @@ export class CertificateGeneratorService {
       });
     }
 
+    // Register fontkit for embedding custom TTF fonts
+    pdfDoc.registerFontkit(fontkit);
+
     // Resolution scale normalization factor based on standard 1000pt baseline
     const resolutionScale = width / 1000;
 
@@ -132,12 +155,27 @@ export class CertificateGeneratorService {
 
       if (!textValue) continue;
 
-      const fontName = this.getFontName(field.fontFamily || 'helvetica', field.fontStyle);
-      if (!fontCache[fontName]) {
-        fontCache[fontName] = await pdfDoc.embedFont(fontName);
+      const fontConfig = getFontById(field.fontFamily || 'great_vibes');
+      const cacheKey = fontConfig.id + '_' + field.fontStyle;
+
+      if (!fontCache[cacheKey]) {
+        if (fontConfig.ttfUrl) {
+          try {
+            const fontBytes = await this.fetchFontBytes(fontConfig.ttfUrl);
+            fontCache[cacheKey] = await pdfDoc.embedFont(fontBytes);
+          } catch (err) {
+            console.warn(`Fallback to standard PDF font for ${fontConfig.id}`, err);
+            const fontName = this.getFontName(fontConfig.category, field.fontStyle);
+            fontCache[cacheKey] = await pdfDoc.embedFont(fontName);
+          }
+        } else {
+          const fontName = this.getFontName(fontConfig.category, field.fontStyle);
+          fontCache[cacheKey] = await pdfDoc.embedFont(fontName);
+        }
       }
-      const font = fontCache[fontName];
-      
+
+      const font = fontCache[cacheKey];
+
       // Calculate normalized font size relative to template resolution
       const baseFontSize = field.fontSize || 32;
       const effectiveFontSize = Math.max(12, Math.round(baseFontSize * resolutionScale));

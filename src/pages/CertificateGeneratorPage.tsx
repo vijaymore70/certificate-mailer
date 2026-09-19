@@ -28,6 +28,7 @@ import {
 } from '../services/certificateGeneratorService';
 import { CertificateFile } from '../types/certificate';
 import { downloadExcelTemplate, downloadCsvTemplate } from '../utils/exportCsv';
+import { CERTIFICATE_FONTS, getFontById } from '../utils/certificateFonts';
 
 export const CertificateGeneratorPage: React.FC = () => {
   const { activeEvent, addCertificates, importParticipantsList } = useEventContext();
@@ -61,10 +62,10 @@ export const CertificateGeneratorPage: React.FC = () => {
       columnKey: '',
       xPercent: 50,
       yPercent: 50,
-      fontSize: 42,
+      fontSize: 52,
       fontColor: '#1e293b',
-      fontFamily: 'times',
-      fontStyle: 'bold',
+      fontFamily: 'great_vibes',
+      fontStyle: 'normal',
       alignment: 'center',
     },
     {
@@ -729,10 +730,7 @@ export const CertificateGeneratorPage: React.FC = () => {
 
                   const screenScale = previewCanvasWidth / 1000;
                   const calculatedPreviewFontSize = Math.max(10, Math.round((field.fontSize || 32) * screenScale));
-
-                  let fontFamilyCss = 'font-sans';
-                  if (field.fontFamily === 'times') fontFamilyCss = 'font-serif';
-                  if (field.fontFamily === 'courier') fontFamilyCss = 'font-mono';
+                  const fontObj = getFontById(field.fontFamily || 'great_vibes');
 
                   return (
                     <div
@@ -759,10 +757,11 @@ export const CertificateGeneratorPage: React.FC = () => {
                           style={{
                             color: field.fontColor,
                             fontSize: `${calculatedPreviewFontSize}px`,
+                            fontFamily: fontObj.cssFamily,
                             fontWeight: field.fontStyle === 'bold' ? 'bold' : 'normal',
                             fontStyle: field.fontStyle === 'italic' ? 'italic' : 'normal',
                           }}
-                          className={`whitespace-nowrap drop-shadow-sm ${fontFamilyCss}`}
+                          className="whitespace-nowrap drop-shadow-sm"
                         >
                           {textValue || `[${field.label}]`}
                         </span>
@@ -914,15 +913,40 @@ export const CertificateGeneratorPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Font Family:</label>
+                    <label className="text-slate-400 block mb-1">Font Family (12+ Certificate Fonts):</label>
                     <select
-                      value={selectedFieldConfig.fontFamily || 'helvetica'}
-                      onChange={(e) => updateSelectedField('fontFamily', e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-cyan-500 focus:outline-none"
+                      value={selectedFieldConfig.fontFamily || 'great_vibes'}
+                      onChange={(e) => updateSelectedField('fontFamily', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-cyan-500 focus:outline-none"
                     >
-                      <option value="times">Times New Roman (Classic Serif)</option>
-                      <option value="helvetica">Helvetica (Modern Clean)</option>
-                      <option value="courier">Courier (Monospace Code)</option>
+                      <optgroup label="✨ Calligraphy & Script (Best for Names)">
+                        {CERTIFICATE_FONTS.filter((f) => f.category === 'script').map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="🏛️ Classical Imperial Serif">
+                        {CERTIFICATE_FONTS.filter((f) => f.category === 'serif').map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="🔷 Modern Clean Sans-Serif">
+                        {CERTIFICATE_FONTS.filter((f) => f.category === 'sans').map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="🏷️ Monospace Stamp">
+                        {CERTIFICATE_FONTS.filter((f) => f.category === 'mono').map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </div>
 
