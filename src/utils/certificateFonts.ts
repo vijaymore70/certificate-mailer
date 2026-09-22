@@ -1,12 +1,49 @@
 export interface CertificateFont {
   id: string;
   name: string;
-  category: 'script' | 'serif' | 'sans' | 'mono';
+  category: 'script' | 'serif' | 'sans' | 'mono' | 'marathi';
   ttfUrl: string;
   cssFamily: string;
 }
 
 export const CERTIFICATE_FONTS: CertificateFont[] = [
+  // --- STYLISH MARATHI / DEVANAGARI FONTS (Google Input Support) ---
+  {
+    id: 'rozha_one',
+    name: 'Rozha One (मराठी स्टाइल - कॉलोग्राफी)',
+    category: 'marathi',
+    ttfUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/rozha-one@latest/devanagari-400-normal.ttf',
+    cssFamily: "'Rozha One', serif",
+  },
+  {
+    id: 'yatra_one',
+    name: 'Yatra One (मराठी आर्ट - क्लासिक)',
+    category: 'marathi',
+    ttfUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/yatra-one@latest/devanagari-400-normal.ttf',
+    cssFamily: "'Yatra One', cursive",
+  },
+  {
+    id: 'modak',
+    name: 'Modak (मराठी ठळक - बोल्ड लुक)',
+    category: 'marathi',
+    ttfUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/modak@latest/devanagari-400-normal.ttf',
+    cssFamily: "'Modak', cursive",
+  },
+  {
+    id: 'tiro_marathi',
+    name: 'Tiro Devanagari Marathi (पारंपारिक मराठी)',
+    category: 'marathi',
+    ttfUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/tiro-devanagari-marathi@latest/devanagari-400-normal.ttf',
+    cssFamily: "'Tiro Devanagari Marathi', serif",
+  },
+  {
+    id: 'baloo_2',
+    name: 'Baloo 2 (मराठी मॉडर्न - स्टाइलिश)',
+    category: 'marathi',
+    ttfUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/baloo-2@latest/devanagari-700-normal.ttf',
+    cssFamily: "'Baloo 2', cursive",
+  },
+
   // --- ELEGANT CALLIGRAPHY & SCRIPT (Best for Participant Names) ---
   {
     id: 'great_vibes',

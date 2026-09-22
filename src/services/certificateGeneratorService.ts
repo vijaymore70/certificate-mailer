@@ -65,7 +65,7 @@ export class CertificateGeneratorService {
    * Helper to select standard fallback PDF font
    */
   private static getFontName(
-    category: 'script' | 'serif' | 'sans' | 'mono' = 'sans',
+    category: 'script' | 'serif' | 'sans' | 'mono' | 'marathi' = 'sans',
     style: 'normal' | 'bold' | 'italic' = 'normal'
   ): StandardFonts {
     if (category === 'serif' || category === 'script') {

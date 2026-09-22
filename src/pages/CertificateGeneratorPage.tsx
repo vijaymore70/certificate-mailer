@@ -915,6 +915,13 @@ export const CertificateGeneratorPage: React.FC = () => {
                       onChange={(e) => updateSelectedField('fontFamily', e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-cyan-500 focus:outline-none"
                     >
+                      <optgroup label="🚩 Marathi & Devanagari Stylish (Google Input)">
+                        {CERTIFICATE_FONTS.filter((f) => f.category === 'marathi').map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
                       <optgroup label="✨ Calligraphy & Script (Best for Names)">
                         {CERTIFICATE_FONTS.filter((f) => f.category === 'script').map((f) => (
                           <option key={f.id} value={f.id}>
