@@ -99,6 +99,13 @@ export class CertificateGeneratorService {
   }
 
   /**
+   * Helper to check if string contains Devanagari / Indic script characters (Marathi/Hindi)
+   */
+  static containsDevanagari(text: string): boolean {
+    return /[\u0900-\u097F]/.test(text);
+  }
+
+  /**
    * Generate a single PDF document overlaying text configurations onto template bytes
    */
   static async generateSinglePDF(
@@ -140,13 +147,69 @@ export class CertificateGeneratorService {
       });
     }
 
-    // Register fontkit for embedding custom TTF fonts
-    pdfDoc.registerFontkit(fontkit);
-
-    // Resolution scale normalization factor based on standard 1000pt baseline
     const resolutionScale = width / 1000;
 
-    // Embed fonts cache
+    // Check if any text field contains Devanagari/Marathi characters or uses a Marathi font
+    const hasDevanagari = fieldConfigs.some((field) => {
+      let textValue = field.isCustomText
+        ? field.customValue || ''
+        : String(rowData[field.columnKey] || '').trim();
+      const fontConfig = getFontById(field.fontFamily || 'great_vibes');
+      return this.containsDevanagari(textValue) || fontConfig.category === 'marathi';
+    });
+
+    // If Devanagari text is present, render via high-DPI HTML Canvas overlay for 100% PERFECT Devanagari ligatures
+    if (hasDevanagari && typeof document !== 'undefined') {
+      const scale = 2; // 2x scale for 300+ DPI razor-sharp output
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        ctx.scale(scale, scale);
+
+        for (const field of fieldConfigs) {
+          let textValue = field.isCustomText
+            ? field.customValue || ''
+            : String(rowData[field.columnKey] || '').trim();
+
+          if (!textValue) continue;
+
+          const fontConfig = getFontById(field.fontFamily || 'great_vibes');
+          const baseFontSize = field.fontSize || 32;
+          const effectiveFontSize = Math.max(12, Math.round(baseFontSize * resolutionScale));
+
+          const fontStyleStr =
+            field.fontStyle === 'bold' ? 'bold ' : field.fontStyle === 'italic' ? 'italic ' : '';
+
+          ctx.font = `${fontStyleStr}${effectiveFontSize}px ${fontConfig.cssFamily}, 'Baloo 2', 'Rozha One', 'Yatra One', 'Tiro Devanagari Marathi', sans-serif`;
+          ctx.fillStyle = field.fontColor || '#000000';
+          ctx.textAlign = field.alignment || 'center';
+          ctx.textBaseline = 'middle';
+
+          let x = (field.xPercent / 100) * width;
+          let y = (field.yPercent / 100) * height;
+
+          ctx.fillText(textValue, x, y);
+        }
+
+        const overlayDataUrl = canvas.toDataURL('image/png');
+        const overlayBytes = await fetch(overlayDataUrl).then((r) => r.arrayBuffer());
+        const overlayImage = await pdfDoc.embedPng(overlayBytes);
+        page.drawImage(overlayImage, {
+          x: 0,
+          y: 0,
+          width,
+          height,
+        });
+
+        return await pdfDoc.save();
+      }
+    }
+
+    // Standard pdf-lib embedding for non-Devanagari / English text
+    pdfDoc.registerFontkit(fontkit);
     const fontCache: Record<string, any> = {};
 
     for (const field of fieldConfigs) {
@@ -177,26 +240,21 @@ export class CertificateGeneratorService {
       }
 
       const font = fontCache[cacheKey];
-
-      // Calculate normalized font size relative to template resolution
       const baseFontSize = field.fontSize || 32;
       const effectiveFontSize = Math.max(12, Math.round(baseFontSize * resolutionScale));
 
       const textWidth = font.widthOfTextAtSize(textValue, effectiveFontSize);
       const color = this.hexToRgb(field.fontColor || '#000000');
 
-      // PDF coordinates have (0,0) at bottom-left corner
       let x = (field.xPercent / 100) * width;
       let y = height - (field.yPercent / 100) * height;
 
-      // Adjust alignment
       if (field.alignment === 'center') {
         x = x - textWidth / 2;
       } else if (field.alignment === 'right') {
         x = x - textWidth;
       }
 
-      // Vertical alignment compensation so text draws nicely on baseline
       y = y - effectiveFontSize / 3;
 
       page.drawText(textValue, {
@@ -244,6 +302,23 @@ export class CertificateGeneratorService {
     if (onProgress) {
       onProgress(0, rawRows.length);
       await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    // Pre-load web fonts into browser document.fonts for canvas rendering
+    if (typeof document !== 'undefined' && document.fonts) {
+      for (const field of fieldConfigs) {
+        const fontConfig = getFontById(field.fontFamily || 'great_vibes');
+        try {
+          await document.fonts.load(`16px ${fontConfig.cssFamily}`);
+        } catch (e) {
+          // ignore font load error
+        }
+      }
+      try {
+        await document.fonts.ready;
+      } catch (e) {
+        // ignore
+      }
     }
 
     // Pre-fetch all needed TTF fonts in parallel before rendering loop
