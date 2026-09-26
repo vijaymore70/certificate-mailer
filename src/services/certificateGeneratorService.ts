@@ -270,10 +270,13 @@ export class CertificateGeneratorService {
   }
 
   /**
-   * Sanitize filename for individual participant PDFs
+   * Sanitize filename for individual participant PDFs (supports Marathi, English & international Unicode characters)
    */
   static sanitizeFilename(name: string): string {
-    const clean = name.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+    const clean = name
+      .replace(/[\/\\:\*\?"<>\|\x00-\x1F]/g, '')
+      .trim()
+      .replace(/\s+/g, '_');
     return clean || 'Certificate';
   }
 
